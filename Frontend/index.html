@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>STOCK MX</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="config.js"></script>
+</head>
+<body>
+  <section id="login-view" class="login-view">
+    <div class="login-console">
+      <div class="console-top"><span>╔ STOCK_MX ╗</span><span>tty0 · v1.0</span></div>
+      <div class="console-mark">╔═══╗<br>║███║<br>╚═══╝</div>
+      <form id="login-form" class="login-card">
+        <label><span>USUARIO</span><input id="login-email" type="email" required autocomplete="email"></label>
+        <label><span>CONTRASEÑA</span><input id="login-password" type="password" required autocomplete="current-password"></label>
+        <button class="primary" type="submit">[ OK ]</button>
+        <p id="login-error" class="error"></p>
+      </form>
+      <div class="console-bottom"><span>~/stock-mx</span><span>└─_</span></div>
+    </div>
+  </section>
+
+  <div id="app-view" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="brand"><strong>STOCK</strong> MX</div>
+      <nav id="main-nav">
+        <button data-section="dashboard">Inicio</button>
+        <button data-section="productos">Productos</button>
+        <button data-section="inventario">Inventario</button>
+        <button data-section="ventas" data-admin-only>Ventas</button>
+        <button data-section="proveedores">Proveedores</button>
+        <button data-section="reportes">Reportes</button>
+        <button data-section="usuarios" data-admin-only>Usuarios</button>
+      </nav>
+      <button id="logout" class="logout">Cerrar sesión</button>
+    </aside>
+    <main class="content">
+      <header class="topbar">
+        <div><span class="eyebrow">/var/stock-mx · CONTROL_OPERATIVO</span><h2 id="page-title">Inicio</h2></div>
+        <div id="user-badge" class="user-badge"></div>
+      </header>
+
+      <section id="dashboard-section" class="page-section">
+        <div class="dashboard-head"><div><span class="eyebrow">SEÑAL / 00:00:00</span><h3>CONTROL</h3></div><button class="secondary" data-refresh="dashboard">[ ↻ ]</button></div>
+        <div id="dashboard-cards" class="cards"></div>
+        <div class="dashboard-grid">
+          <div class="panel dashboard-alerts"><div class="panel-title"><h3>! ALERTAS</h3><span class="status-light">●</span></div><div id="dashboard-alerts"></div></div>
+          <div class="panel dashboard-sales"><div class="panel-title"><h3>▣ ÚLTIMAS VENTAS</h3><span class="muted">HISTORIAL</span></div><div id="recent-sales"></div></div>
+          <div class="retro-monitor"><div class="monitor-top">MX_01</div><div class="monitor-art">╱╲<br>╱  ╲<br>╲  ╱<br> ╲╱</div><strong>STOCK<br>MX</strong><span>///</span></div>
+        </div>
+      </section>
+
+      <section id="productos-section" class="page-section hidden">
+        <div class="section-head"><div><p class="muted">Catálogo activo / edición administrativa</p></div><button class="primary admin-action" id="new-product">Nuevo producto</button></div>
+        <div class="toolbar"><input id="product-search" placeholder="Buscar por nombre o código"><button class="secondary" id="search-products">Buscar</button><label class="check"><input id="include-inactive" type="checkbox"> Ver inactivos</label></div>
+        <div class="panel table-wrap"><table><thead><tr><th>Producto</th><th>Código de producto</th><th>Precio</th><th>Stock</th><th>Mínimo</th><th>Estado</th><th></th></tr></thead><tbody id="products-table"></tbody></table></div>
+      </section>
+
+      <section id="inventario-section" class="page-section hidden">
+        <div class="section-head"><div><p class="muted">Existencias / entradas / salidas</p></div><div><button class="secondary" id="new-entry">Registrar entrada</button><button class="danger" id="new-exit">Registrar salida</button></div></div>
+        <div class="toolbar"><label class="check"><input id="low-stock-only" type="checkbox"> Solo stock bajo</label><button class="secondary" data-refresh="inventario">Actualizar</button></div>
+        <div class="panel table-wrap"><table><thead><tr><th>Producto</th><th>Código de producto</th><th>Existencia</th><th>Mínimo</th><th>Estado</th></tr></thead><tbody id="inventory-table"></tbody></table></div>
+        <div class="panel"><h3>Movimientos recientes</h3><div id="movements-table"></div></div>
+      </section>
+
+      <section id="ventas-section" class="page-section hidden">
+        <div class="section-head"><div><p class="muted">Selecciona productos y confirma el cobro.</p></div></div>
+        <div class="sale-layout"><div class="panel"><label>Producto<select id="sale-product"></select></label><label>Cantidad<input id="sale-quantity" type="number" min="1" value="1"></label><button class="primary" id="add-to-cart">Agregar al carrito</button></div><div class="panel"><h3>Carrito</h3><div id="cart"></div><div class="cart-total">Total: <strong id="cart-total">$0.00</strong></div><button class="primary" id="confirm-sale">Confirmar venta</button></div></div>
+        <div class="panel"><h3>Ventas recientes</h3><div id="sales-table"></div></div>
+      </section>
+
+      <section id="proveedores-section" class="page-section hidden">
+        <div class="section-head"><div><p class="muted">Directorio de abastecimiento</p></div><button class="primary admin-action" id="new-supplier">Nuevo proveedor</button></div>
+        <div class="panel table-wrap"><table><thead><tr><th>Nombre</th><th>Teléfono</th><th>Correo</th><th></th></tr></thead><tbody id="suppliers-table"></tbody></table></div>
+      </section>
+
+      <section id="usuarios-section" class="page-section hidden">
+        <div class="section-head"><div><p class="muted">Control de cuentas / solo administrador</p></div><button class="primary" id="new-user">Nuevo usuario</button></div>
+        <div class="panel table-wrap"><table><thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th></th></tr></thead><tbody id="users-table"></tbody></table></div>
+      </section>
+
+      <section id="reportes-section" class="page-section hidden">
+        <div class="section-head"><div><p class="muted">Lectura de ventas y existencias por periodo</p></div><button class="secondary" id="print-report">Descargar PDF</button></div>
+        <div class="toolbar report-filters"><label>Desde<input id="report-from" type="date"></label><label>Hasta<input id="report-to" type="date"></label><button class="secondary" id="load-reports">Consultar periodo</button><button class="primary admin-action" id="save-report">Guardar reporte</button></div>
+        <div id="report-cards" class="cards"></div>
+        <div class="report-grid">
+          <div class="panel"><h3>Productos más vendidos</h3><div id="top-products"></div></div>
+          <div class="panel"><h3>Menor movimiento</h3><div id="low-products"></div></div>
+        </div>
+        <div class="panel report-preview"><div class="panel-title"><h3>Vista previa</h3><span class="muted">PDF / IMPRESIÓN</span></div><div id="report-preview"></div></div>
+        <div class="panel table-wrap"><table><thead><tr><th>Venta</th><th>Fecha</th><th>Producto</th><th>Código de producto</th><th>Unidades</th><th>Precio</th><th>Subtotal</th></tr></thead><tbody id="report-detail"></tbody></table></div>
+        <div class="panel"><div class="panel-title"><h3>Historial de reportes</h3><span class="muted">GENERADOS</span></div><div id="report-history"></div></div>
+      </section>
+    </main>
+  </div>
+  <div id="boot-sequence" class="boot-sequence hidden" aria-hidden="true">
+    <div class="boot-glyph">◇</div>
+  </div>
+  <div id="modal" class="modal hidden"><div class="modal-card"><button id="close-modal" class="modal-close">×</button><h3 id="modal-title"></h3><form id="modal-form"></form></div></div>
+  <div id="toast" class="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>
