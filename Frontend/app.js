@@ -19,20 +19,12 @@ async function api(path, options = {}) {
 }
 async function showApp() {
   $("login-view").classList.add("hidden"); $("app-view").classList.remove("hidden");
-  playBoot();
   $("user-badge").textContent = `${state.user.nombre} · ${state.user.rol}`;
   document.querySelectorAll("[data-admin-only],.admin-action").forEach((el) => el.classList.toggle("hidden", state.user.rol !== "administrador"));
-  showSection(state.section); loadDashboard();
-}
-function playBoot() {
-  const boot = $("boot-sequence");
-  boot.classList.remove("hidden", "complete");
-  window.requestAnimationFrame(() => boot.classList.add("complete"));
-  window.setTimeout(() => boot.classList.add("hidden"), 620);
+  showSection(state.section);
 }
 function showSection(section) {
   if (state.user?.rol !== "administrador" && ["ventas", "usuarios"].includes(section)) section = "dashboard";
-  if (state.section !== section) playBoot();
   state.section = section; document.querySelectorAll(".page-section").forEach((el) => el.classList.add("hidden"));
   $(`${section}-section`).classList.remove("hidden"); $("page-title").textContent = section === "dashboard" ? "Inicio" : section[0].toUpperCase() + section.slice(1);
   document.querySelectorAll("#main-nav button").forEach((el) => el.classList.toggle("active", el.dataset.section === section));
@@ -41,7 +33,23 @@ function showSection(section) {
 }
 function renderEmpty(text, colspan = 8) { return `<tr><td colspan="${colspan}" class="muted">${text}</td></tr>`; }
 async function loadDashboard() {
-  try { const data = await api("/dashboard"); $("dashboard-cards").innerHTML = `<div class="stat"><span>PRODUCTOS ACTIVOS</span><strong>${data.total_productos}</strong></div><div class="stat alert"><span>STOCK BAJO</span><strong>${data.productos_stock_bajo}</strong></div><div class="stat"><span>VENTAS ACUMULADAS</span><strong>${data.ventas_acumuladas}</strong></div><div class="stat"><span>UNIDADES VENDIDAS</span><strong>${data.unidades_vendidas}</strong></div><div class="stat"><span>VENTAS BRUTAS</span><strong>${money(data.ventas_brutas)}</strong></div>`; $("recent-sales").innerHTML = data.ventas_recientes.length ? data.ventas_recientes.map((v) => `<div class="cart-row"><span>#${v.id} · ${new Date(v.fecha).toLocaleString()}</span><strong>${money(v.total)}</strong></div>`).join("") : "<p class='muted'>Sin ventas registradas.</p>"; $("dashboard-alerts").innerHTML = data.productos_stock_bajo ? `<p class="alert-line">! ${data.productos_stock_bajo} PRODUCTO(S)</p><button class="secondary" onclick="showSection('inventario')">[ ABRIR ]</button>` : "<p class='ok-line'>Sin alertas de stock.</p>"; } catch(e) { toast(e.message); }
+  try {
+    const data = await api("/dashboard");
+    $("dashboard-cards").innerHTML = `
+      <div class="stat"><span>Productos activos</span><strong>${data.total_productos}</strong></div>
+      <div class="stat alert"><span>Stock bajo</span><strong>${data.productos_stock_bajo}</strong></div>
+      <div class="stat"><span>Ventas realizadas</span><strong>${data.ventas_acumuladas}</strong></div>
+      <div class="stat"><span>Unidades vendidas</span><strong>${data.unidades_vendidas}</strong></div>
+      <div class="stat"><span>Ventas brutas</span><strong>${money(data.ventas_brutas)}</strong></div>`;
+    $("recent-sales").innerHTML = data.ventas_recientes.length
+      ? data.ventas_recientes.map((venta) => `<div class="cart-row"><span>Venta #${venta.id} · ${new Date(venta.fecha).toLocaleString()}</span><strong>${money(venta.total)}</strong></div>`).join("")
+      : "<p class='muted'>Aún no hay ventas registradas.</p>";
+    $("dashboard-alerts").innerHTML = data.productos_stock_bajo
+      ? `<p class="alert-line">${data.productos_stock_bajo} productos necesitan reposición.</p><button class="secondary" onclick="showSection('inventario')">Ver inventario</button>`
+      : "<p class='ok-line'>El inventario está al día.</p>";
+  } catch (error) {
+    toast(error.message);
+  }
 }
 async function loadProducts() {
   try { const search = $("product-search").value.trim(); const includeInactive = state.user.rol === "administrador" && $("include-inactive").checked; const params = new URLSearchParams({ incluir_inactivos: String(includeInactive) }); if (search) params.set("busqueda", search); state.products = await api(`/productos?${params}`); $("products-table").innerHTML = state.products.length ? state.products.map((p) => `<tr class="${p.activo ? "" : "inactive-row"}"><td>${esc(p.nombre)}</td><td>${esc(p.codigo)}</td><td>${money(p.precio)}</td><td>${p.existencia_actual}</td><td>${p.stock_minimo}</td><td><span class="badge ${p.activo ? (p.existencia_actual <= p.stock_minimo ? "low" : "") : "low"}">${p.activo ? (p.existencia_actual <= p.stock_minimo ? "Reponer":"Normal") : "Inactivo"}</span></td><td class="actions">${state.user.rol === "administrador" ? `<button class="secondary" onclick="editProduct(${p.id})">Editar</button>${p.activo ? `  <button class="danger" onclick="setProductActive(${p.id},false)">Eliminar</button>` : `<button class="secondary" onclick="setProductActive(${p.id},true)">Activar</button>`}` : ""}</td></tr>`).join("") : renderEmpty("No hay productos.", 7); } catch(e) { toast(e.message); }
@@ -72,5 +80,41 @@ function renderCart() { $("cart").innerHTML=state.cart.map((x,i)=>`<div class="c
 async function movement(type) { try { const products=await api("/productos"); const options=products.map(p=>({value:p.id,label:`${p.nombre} · ${p.codigo} · stock ${p.existencia_actual}`})); const fields=[{label:"Producto",name:"producto_id",options},{label:"Cantidad",name:"cantidad",type:"number"},{label:"Motivo",name:"motivo",required:false}]; openModal(type==="entrada"?"Registrar entrada":"Registrar salida",fields, d=>api(`/inventario/${type==="entrada"?"entradas":"salidas"}`,{method:"POST",body:JSON.stringify({...d,producto_id:Number(d.producto_id),cantidad:Number(d.cantidad)})})); } catch (error) { toast(error.message); } }
 function printReport() { document.body.classList.add("print-report"); window.print(); window.setTimeout(() => document.body.classList.remove("print-report"), 300); }
 document.querySelectorAll("#main-nav button").forEach(b=>b.onclick=()=>showSection(b.dataset.section)); document.querySelectorAll("[data-refresh]").forEach(b=>b.onclick=()=>showSection(b.dataset.refresh)); $("login-form").onsubmit=async e=>{e.preventDefault();$("login-error").textContent="";try{const correo=$("login-email").value.trim();const d=await api("/auth/login",{method:"POST",body:JSON.stringify({correo,password:$("login-password").value})});state.token=d.access_token;state.user={nombre:d.nombre,correo,rol:d.rol};localStorage.setItem("stockmx_token",state.token);localStorage.setItem("stockmx_user",JSON.stringify(state.user));await showApp();}catch(err){$("login-error").textContent=err.message;}}; $("logout").onclick=()=>{localStorage.clear();location.reload()}; $("close-modal").onclick=()=>$("modal").classList.add("hidden"); $("search-products").onclick=loadProducts; $("product-search").onkeydown=e=>{if(e.key==="Enter")loadProducts()}; $("include-inactive").onchange=loadProducts; $("low-stock-only").onchange=loadInventory; $("new-entry").onclick=()=>movement("entrada"); $("new-exit").onclick=()=>movement("salida"); $("add-to-cart").onclick=addCart; $("confirm-sale").onclick=async()=>{if(!state.cart.length)return toast("El carrito está vacío");try{await api("/ventas",{method:"POST",body:JSON.stringify({detalles:state.cart.map(x=>({producto_id:x.producto_id,cantidad:x.cantidad}))})});state.cart=[];renderCart();toast("Venta registrada");loadSales();loadProducts();loadDashboard();}catch(e){toast(e.message);}}; $("report-from").value=today(); $("report-to").value=today(); $("load-reports").onclick=loadReports; $("save-report").onclick=saveReport; $("print-report").onclick=printReport; $("new-product").onclick=async()=>{try{const suppliers=await api("/proveedores");openModal("Nuevo producto",[{label:"Nombre",name:"nombre"},{label:"Código",name:"codigo"},{label:"Precio de venta",name:"precio",type:"number"},{label:"Precio de adquisición",name:"costo",type:"number",required:false},{label:"Categoría",name:"categoria",required:false},supplierField(suppliers),{label:"Stock mínimo",name:"stock_minimo",type:"number"},{label:"Existencia inicial",name:"existencia_inicial",type:"number"}],d=>api("/productos",{method:"POST",body:JSON.stringify({...productPayload(d),existencia_inicial:Number(d.existencia_inicial)})}));}catch(e){toast(e.message);}}; $("new-supplier").onclick=()=>openModal("Nuevo proveedor",[{label:"Nombre",name:"nombre"},{label:"Teléfono",name:"telefono",required:false},{label:"Correo",name:"correo",type:"email",required:false}],d=>api("/proveedores",{method:"POST",body:JSON.stringify(omitEmpty(d,["telefono","correo"]))})); $("new-user").onclick=()=>openModal("Nuevo usuario",[{label:"Nombre",name:"nombre"},{label:"Correo",name:"correo",type:"email"},{label:"Contraseña",name:"password",type:"password"},{label:"Rol (administrador o empleado)",name:"rol",value:"empleado"}],d=>api("/usuarios",{method:"POST",body:JSON.stringify(d)}));
-async function restoreSession() { if (!state.token || !state.user) return; try { const profile = await api("/auth/me"); state.user = profile; localStorage.setItem("stockmx_user", JSON.stringify(profile)); await showApp(); } catch (error) { localStorage.clear(); $("login-error").textContent = "La sesión expiró. Inicia sesión nuevamente."; } }
+const loginForm = $("login-form");
+const submitLogin = loginForm.onsubmit;
+loginForm.onsubmit = async (event) => {
+  const button = loginForm.querySelector('[type="submit"]');
+  const status = $("login-error");
+  const originalLabel = button.textContent;
+  button.disabled = true;
+  button.textContent = "Conectando...";
+  const slowConnectionNotice = window.setTimeout(() => {
+    status.textContent = "Conectando…";
+  }, 2500);
+  try {
+    await submitLogin(event);
+  } finally {
+    window.clearTimeout(slowConnectionNotice);
+    button.disabled = false;
+    button.textContent = originalLabel;
+  }
+};
+async function restoreSession() {
+  if (!state.token || !state.user) return;
+  $("login-error").textContent = "Conectando para recuperar tu sesión...";
+  const slowConnectionNotice = window.setTimeout(() => {
+    $("login-error").textContent = "Conectando…";
+  }, 2500);
+  try {
+    const profile = await api("/auth/me");
+    state.user = profile;
+    localStorage.setItem("stockmx_user", JSON.stringify(profile));
+    await showApp();
+  } catch (error) {
+    localStorage.clear();
+    $("login-error").textContent = "La sesión expiró. Inicia sesión nuevamente.";
+  } finally {
+    window.clearTimeout(slowConnectionNotice);
+  }
+}
 restoreSession();

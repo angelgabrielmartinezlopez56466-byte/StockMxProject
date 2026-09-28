@@ -27,8 +27,11 @@ def dashboard(
         Producto.activo.is_(True),
         Inventario.existencia_actual <= Producto.stock_minimo,
     ).scalar() or 0
-    ventas = db.query(Venta).order_by(Venta.fecha.desc()).all()
-    ventas_total = sum((venta.total for venta in ventas), Decimal("0.00"))
+    ventas_acumuladas, ventas_total = db.query(
+        func.count(Venta.id),
+        func.coalesce(func.sum(Venta.total), Decimal("0.00")),
+    ).one()
+    ventas_recientes = db.query(Venta).order_by(Venta.fecha.desc()).limit(5).all()
     unidades_vendidas = db.query(func.coalesce(func.sum(DetalleVenta.cantidad), 0)).scalar() or 0
     mas_vendidos = db.query(
         Producto.nombre,
@@ -39,7 +42,7 @@ def dashboard(
     return {
         "total_productos": total_productos,
         "productos_stock_bajo": stock_bajo,
-        "ventas_acumuladas": len(ventas),
+        "ventas_acumuladas": ventas_acumuladas,
         "ventas_brutas": ventas_total,
         "unidades_vendidas": unidades_vendidas,
         "productos_mas_vendidos": [
@@ -53,6 +56,6 @@ def dashboard(
                 "total": venta.total,
                 "usuario_id": venta.usuario_id,
             }
-            for venta in ventas[:5]
+            for venta in ventas_recientes
         ],
     }

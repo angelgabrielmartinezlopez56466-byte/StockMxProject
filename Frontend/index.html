@@ -9,22 +9,24 @@
 </head>
 <body>
   <section id="login-view" class="login-view">
+    <svg class="login-watermark" viewBox="0 0 320 320" aria-hidden="true"><path d="M48 272V112l112-72 112 72v160H48Z"/><path d="M48 152h224M48 200h224M108 152v48m104-48v48M108 200v72m104-72v72"/></svg>
     <div class="login-console">
-      <div class="console-top"><span>╔ STOCK_MX ╗</span><span>tty0 · v1.0</span></div>
-      <div class="console-mark">╔═══╗<br>║███║<br>╚═══╝</div>
+      <div class="login-lockup">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M5 27V11l11-7 11 7v16H5Z"/><path d="M5 15h22M5 21h22M11 15v6m10-6v6M11 21v6m10-6v6"/></svg>
+        <span><strong>STOCK</strong> MX</span>
+      </div>
       <form id="login-form" class="login-card">
-        <label><span>USUARIO</span><input id="login-email" type="email" required autocomplete="email"></label>
-        <label><span>CONTRASEÑA</span><input id="login-password" type="password" required autocomplete="current-password"></label>
-        <button class="primary" type="submit">[ OK ]</button>
-        <p id="login-error" class="error"></p>
+        <label><span>Correo electrónico</span><input id="login-email" type="email" required autocomplete="email" placeholder="nombre@ejemplo.com"></label>
+        <label><span>Contraseña</span><input id="login-password" type="password" required autocomplete="current-password" placeholder="Ingresa tu contraseña"></label>
+        <button class="primary" type="submit">Iniciar sesión</button>
+        <p id="login-error" class="error" role="status" aria-live="polite"></p>
       </form>
-      <div class="console-bottom"><span>~/stock-mx</span><span>└─_</span></div>
     </div>
   </section>
 
   <div id="app-view" class="app-shell hidden">
     <aside class="sidebar">
-      <div class="brand"><strong>STOCK</strong> MX</div>
+      <div class="brand"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M5 27V11l11-7 11 7v16H5Z"/><path d="M5 15h22M5 21h22M11 15v6m10-6v6M11 21v6m10-6v6"/></svg><span><strong>STOCK</strong> MX</span></div>
       <nav id="main-nav">
         <button data-section="dashboard">Inicio</button>
         <button data-section="productos">Productos</button>
@@ -38,17 +40,17 @@
     </aside>
     <main class="content">
       <header class="topbar">
-        <div><span class="eyebrow">/var/stock-mx · CONTROL_OPERATIVO</span><h2 id="page-title">Inicio</h2></div>
+        <div><span class="eyebrow">PANEL DE ADMINISTRACIÓN</span><h2 id="page-title">Inicio</h2></div>
         <div id="user-badge" class="user-badge"></div>
       </header>
 
       <section id="dashboard-section" class="page-section">
-        <div class="dashboard-head"><div><span class="eyebrow">SEÑAL / 00:00:00</span><h3>CONTROL</h3></div><button class="secondary" data-refresh="dashboard">[ ↻ ]</button></div>
+        <div class="dashboard-head"><div><span class="eyebrow">RESUMEN DEL NEGOCIO</span><h3>Vista general</h3></div><button class="secondary" data-refresh="dashboard">Actualizar</button></div>
         <div id="dashboard-cards" class="cards"></div>
         <div class="dashboard-grid">
-          <div class="panel dashboard-alerts"><div class="panel-title"><h3>! ALERTAS</h3><span class="status-light">●</span></div><div id="dashboard-alerts"></div></div>
-          <div class="panel dashboard-sales"><div class="panel-title"><h3>▣ ÚLTIMAS VENTAS</h3><span class="muted">HISTORIAL</span></div><div id="recent-sales"></div></div>
-          <div class="retro-monitor"><div class="monitor-top">MX_01</div><div class="monitor-art">╱╲<br>╱  ╲<br>╲  ╱<br> ╲╱</div><strong>STOCK<br>MX</strong><span>///</span></div>
+          <div class="panel dashboard-alerts"><div class="panel-title"><h3>Alertas de inventario</h3><span class="status-light" aria-hidden="true"></span></div><div id="dashboard-alerts"></div></div>
+          <div class="panel dashboard-sales"><div class="panel-title"><h3>Ventas recientes</h3><span class="muted">HISTORIAL</span></div><div id="recent-sales"></div></div>
+          <div class="panel dashboard-guide"><div class="panel-title"><h3>Accesos rápidos</h3></div><p>Consulta tus existencias o busca un producto en el catálogo.</p><button class="secondary" onclick="showSection('inventario')">Ver inventario</button><button class="secondary" onclick="showSection('productos')">Buscar productos</button></div>
         </div>
       </section>
 
@@ -94,9 +96,6 @@
         <div class="panel"><div class="panel-title"><h3>Historial de reportes</h3><span class="muted">GENERADOS</span></div><div id="report-history"></div></div>
       </section>
     </main>
-  </div>
-  <div id="boot-sequence" class="boot-sequence hidden" aria-hidden="true">
-    <div class="boot-glyph">◇</div>
   </div>
   <div id="modal" class="modal hidden"><div class="modal-card"><button id="close-modal" class="modal-close">×</button><h3 id="modal-title"></h3><form id="modal-form"></form></div></div>
   <div id="toast" class="toast"></div>
