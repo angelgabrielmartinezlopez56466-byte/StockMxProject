@@ -31,7 +31,6 @@
         <button data-section="dashboard">Inicio</button>
         <button data-section="productos">Productos</button>
         <button data-section="inventario">Inventario</button>
-        <button data-section="ventas" data-admin-only>Ventas</button>
         <button data-section="proveedores">Proveedores</button>
         <button data-section="reportes">Reportes</button>
         <button data-section="usuarios" data-admin-only>Usuarios</button>
@@ -40,17 +39,30 @@
     </aside>
     <main class="content">
       <header class="topbar">
-        <div><span class="eyebrow">PANEL DE ADMINISTRACIÓN</span><h2 id="page-title">Inicio</h2></div>
-        <div id="user-badge" class="user-badge"></div>
+        <div><span class="eyebrow">STOCK MX</span><h2 id="page-title">Inicio</h2></div>
+        <span id="user-badge" class="user-badge"></span>
       </header>
 
       <section id="dashboard-section" class="page-section">
-        <div class="dashboard-head"><div><span class="eyebrow">RESUMEN DEL NEGOCIO</span><h3>Vista general</h3></div><button class="secondary" data-refresh="dashboard">Actualizar</button></div>
-        <div id="dashboard-cards" class="cards"></div>
-        <div class="dashboard-grid">
-          <div class="panel dashboard-alerts"><div class="panel-title"><h3>Alertas de inventario</h3><span class="status-light" aria-hidden="true"></span></div><div id="dashboard-alerts"></div></div>
-          <div class="panel dashboard-sales"><div class="panel-title"><h3>Ventas recientes</h3><span class="muted">HISTORIAL</span></div><div id="recent-sales"></div></div>
-          <div class="panel dashboard-guide"><div class="panel-title"><h3>Accesos rápidos</h3></div><p>Consulta tus existencias o busca un producto en el catálogo.</p><button class="secondary" onclick="showSection('inventario')">Ver inventario</button><button class="secondary" onclick="showSection('productos')">Buscar productos</button></div>
+        <div class="dashboard-head"><div><span class="eyebrow">INVENTARIO</span><h3>Vista general</h3></div><button class="secondary" data-refresh="dashboard">Actualizar</button></div>
+        <div id="dashboard-cards" class="cards dashboard-cards"></div>
+        <div class="sale-home">
+          <div class="sale-home-heading"><span class="eyebrow">PUNTO DE VENTA</span><h3>Registrar venta</h3></div>
+          <div class="sale-layout">
+          <div class="panel sale-entry">
+            <h3>Agregar productos</h3>
+            <label>Producto<select id="sale-product" required></select></label>
+            <p id="sale-product-info" class="sale-product-info" aria-live="polite"></p>
+            <label>Cantidad<input id="sale-quantity" type="number" min="1" step="1" value="1" inputmode="numeric"></label>
+            <button class="primary" id="add-to-cart" type="button">Agregar al carrito</button>
+          </div>
+          <div class="panel sale-checkout">
+            <h3>Resumen de venta</h3>
+            <div id="cart"></div>
+            <div class="cart-total">Total <strong id="cart-total">$0.00</strong></div>
+            <button class="primary" id="confirm-sale" type="button" disabled>Confirmar venta</button>
+          </div>
+        </div>
         </div>
       </section>
 
@@ -67,12 +79,6 @@
         <div class="panel"><h3>Movimientos recientes</h3><div id="movements-table"></div></div>
       </section>
 
-      <section id="ventas-section" class="page-section hidden">
-        <div class="section-head"><div><p class="muted">Selecciona productos y confirma el cobro.</p></div></div>
-        <div class="sale-layout"><div class="panel"><label>Producto<select id="sale-product"></select></label><label>Cantidad<input id="sale-quantity" type="number" min="1" value="1"></label><button class="primary" id="add-to-cart">Agregar al carrito</button></div><div class="panel"><h3>Carrito</h3><div id="cart"></div><div class="cart-total">Total: <strong id="cart-total">$0.00</strong></div><button class="primary" id="confirm-sale">Confirmar venta</button></div></div>
-        <div class="panel"><h3>Ventas recientes</h3><div id="sales-table"></div></div>
-      </section>
-
       <section id="proveedores-section" class="page-section hidden">
         <div class="section-head"><div><p class="muted">Directorio de abastecimiento</p></div><button class="primary admin-action" id="new-supplier">Nuevo proveedor</button></div>
         <div class="panel table-wrap"><table><thead><tr><th>Nombre</th><th>Teléfono</th><th>Correo</th><th></th></tr></thead><tbody id="suppliers-table"></tbody></table></div>
@@ -84,7 +90,7 @@
       </section>
 
       <section id="reportes-section" class="page-section hidden">
-        <div class="section-head"><div><p class="muted">Lectura de ventas y existencias por periodo</p></div><button class="secondary" id="print-report">Descargar PDF</button></div>
+        <div class="section-head"><div><p class="muted">Ventas, productos y actividad del periodo seleccionado</p></div><button class="secondary" id="print-report">Descargar PDF</button></div>
         <div class="toolbar report-filters"><label>Desde<input id="report-from" type="date"></label><label>Hasta<input id="report-to" type="date"></label><button class="secondary" id="load-reports">Consultar periodo</button><button class="primary admin-action" id="save-report">Guardar reporte</button></div>
         <div id="report-cards" class="cards"></div>
         <div class="report-grid">
@@ -93,7 +99,7 @@
         </div>
         <div class="panel report-preview"><div class="panel-title"><h3>Vista previa</h3><span class="muted">PDF / IMPRESIÓN</span></div><div id="report-preview"></div></div>
         <div class="panel table-wrap"><table><thead><tr><th>Venta</th><th>Fecha</th><th>Producto</th><th>Código de producto</th><th>Unidades</th><th>Precio</th><th>Subtotal</th></tr></thead><tbody id="report-detail"></tbody></table></div>
-        <div class="panel"><div class="panel-title"><h3>Historial de reportes</h3><span class="muted">GENERADOS</span></div><div id="report-history"></div></div>
+        <div class="panel" data-admin-only><div class="panel-title"><h3>Historial de reportes</h3><span class="muted">GENERADOS</span></div><div id="report-history"></div></div>
       </section>
     </main>
   </div>
