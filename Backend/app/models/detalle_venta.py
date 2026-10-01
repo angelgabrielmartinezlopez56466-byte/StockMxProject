@@ -1,10 +1,3 @@
-"""
-models/detalle_venta.py
--------------------------
-Refleja la tabla "detalle_ventas" (qué productos y cuántos se
-vendieron en cada venta).
-"""
-
 from sqlalchemy import Column, Integer, Numeric, ForeignKey
 from app.database import Base
 

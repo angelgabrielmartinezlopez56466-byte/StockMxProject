@@ -1,11 +1,3 @@
-"""
-routes/auth.py
-----------------
-RF-01: Iniciar sesión. El administrador y el empleado entran con
-correo y contraseña; si son correctos, reciben un token que van a
-usar en el resto de sus peticiones.
-"""
-
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -21,9 +13,6 @@ router = APIRouter(prefix="/auth", tags=["Autenticación"])
 def login(datos: LoginRequest, db: Session = Depends(get_db)):
     usuario = db.query(Usuario).filter(Usuario.correo == datos.correo).first()
 
-    # Mismo mensaje de error si el correo no existe o si la
-    # contraseña está mal — así no le damos pistas a quien intenta
-    # adivinar cuentas válidas.
     if not usuario or not verificar_password(datos.password, usuario.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

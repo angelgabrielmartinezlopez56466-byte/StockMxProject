@@ -1,9 +1,3 @@
-"""
-models/producto.py
---------------------
-Refleja la tabla "productos". Se usa para RF-02 (Gestionar productos).
-"""
-
 from sqlalchemy import Column, Integer, String, Numeric, Boolean, ForeignKey, TIMESTAMP, func
 from app.database import Base
 

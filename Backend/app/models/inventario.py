@@ -1,10 +1,3 @@
-"""
-models/inventario.py
-----------------------
-Refleja la tabla "inventario" (existencia actual de cada producto).
-Se usa para RF-03 (Controlar inventario).
-"""
-
 from sqlalchemy import Column, Integer, ForeignKey, TIMESTAMP, func
 from app.database import Base
 

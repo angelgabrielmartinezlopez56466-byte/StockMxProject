@@ -1,9 +1,3 @@
-"""
-models/proveedor.py
----------------------
-Refleja la tabla "proveedores". Quién surte cada producto.
-"""
-
 from sqlalchemy import Column, Integer, String
 from app.database import Base
 

@@ -1,9 +1,3 @@
-"""
-models/venta.py
------------------
-Refleja la tabla "ventas". Se usa para RF-04 (Registrar ventas).
-"""
-
 from sqlalchemy import Column, Integer, Numeric, ForeignKey, TIMESTAMP, func
 from app.database import Base
 

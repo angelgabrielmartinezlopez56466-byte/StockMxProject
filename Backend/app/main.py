@@ -1,21 +1,9 @@
-"""
-main.py
---------
-Punto de entrada de la API. Por ahora solo confirma que FastAPI
-arranca y que todos los modelos se importan sin errores. Las rutas
-reales (login, productos, ventas...) se van a ir agregando aquí
-conforme las construyamos, una por una.
-"""
-
 import os
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# Importar todos los modelos aquí sirve como prueba: si alguno
-# tiene un error de sintaxis o una relación mal escrita, esta
-# línea va a fallar de inmediato al arrancar el servidor.
 from app.models import usuario, producto, proveedor, inventario
 from app.models import movimiento_inventario, venta, detalle_venta, reporte
 
@@ -56,5 +44,4 @@ app.include_router(reportes.router)
 
 @app.get("/")
 def inicio():
-    """Ruta de prueba: si esto responde, la API está viva."""
     return {"mensaje": "STOCK MX API funcionando correctamente"}

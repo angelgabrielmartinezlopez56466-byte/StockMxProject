@@ -1,11 +1,3 @@
-"""
-auth/security.py
-------------------
-Dos trabajos: 1) convertir contraseñas en hashes seguros (y
-verificarlas después), 2) crear y leer los tokens JWT que prueban
-que un usuario ya inició sesión.
-"""
-
 import os
 from datetime import datetime, timedelta
 
@@ -25,26 +17,20 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
     raise ValueError("No se encontró SECRET_KEY en el archivo .env")
 ALGORITHM = "HS256"
-MINUTOS_EXPIRACION_TOKEN = 60 * 8  # el token dura 8 horas, un turno de trabajo
+MINUTOS_EXPIRACION_TOKEN = 60 * 8
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def hashear_password(password_plano: str) -> str:
-    """Convierte una contraseña en texto plano a su hash seguro (bcrypt)."""
     return pwd_context.hash(password_plano)
 
 
 def verificar_password(password_plano: str, password_hash: str) -> bool:
-    """Compara una contraseña en texto plano contra su hash guardado."""
     return pwd_context.verify(password_plano, password_hash)
 
 
 def crear_token(datos: dict) -> str:
-    """
-    Genera un JWT que el frontend va a guardar y enviar en cada
-    petición, para probar que el usuario ya inició sesión.
-    """
     datos_a_codificar = datos.copy()
     expiracion = datetime.utcnow() + timedelta(minutes=MINUTOS_EXPIRACION_TOKEN)
     datos_a_codificar.update({"exp": expiracion})
@@ -52,7 +38,6 @@ def crear_token(datos: dict) -> str:
 
 
 def leer_token(token: str) -> dict | None:
-    """Descifra un token y devuelve sus datos, o None si es inválido/expiró."""
     try:
         return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     except JWTError:

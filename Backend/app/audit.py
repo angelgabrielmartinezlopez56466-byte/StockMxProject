@@ -1,9 +1,3 @@
-"""Auditoría ligera compatible con el esquema actual.
-
-Se registra en el logger de la aplicación para no requerir migraciones ni
-modificar la base existente. El formato es estable y no incluye secretos.
-"""
-
 import logging
 from typing import Any
 
