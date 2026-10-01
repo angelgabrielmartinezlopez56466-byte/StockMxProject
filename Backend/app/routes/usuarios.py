@@ -52,7 +52,7 @@ def crear_usuario(
         db.rollback()
         raise HTTPException(status_code=409, detail="El correo ya está registrado")
     db.refresh(usuario)
-    registrar_auditoria("usuario.crear", administrador.id, usuario_id=usuario.id)
+    registrar_auditoria("usuario.crear", administrador.id, usuario_objetivo_id=usuario.id)
     return usuario
 
 
@@ -68,8 +68,6 @@ def actualizar_usuario(
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     cambios = datos.model_dump(exclude_unset=True)
     _validar_rol(cambios.get("rol"))
-    if cambios.get("activo") is False and usuario.rol == "administrador":
-        raise HTTPException(status_code=409, detail="Las cuentas administrador no se pueden eliminar")
     if "correo" in cambios and db.query(Usuario).filter(
         Usuario.correo == cambios["correo"], Usuario.id != usuario_id
     ).first():
@@ -81,23 +79,33 @@ def actualizar_usuario(
         setattr(usuario, campo, valor)
     db.commit()
     db.refresh(usuario)
-    registrar_auditoria("usuario.actualizar", administrador.id, usuario_id=usuario.id)
+    registrar_auditoria("usuario.actualizar", administrador.id, usuario_objetivo_id=usuario.id)
     return usuario
 
 
 @router.delete("/{usuario_id}", status_code=status.HTTP_204_NO_CONTENT)
-def desactivar_usuario(
+def eliminar_usuario(
     usuario_id: int,
     db: Session = Depends(get_db),
     administrador: Usuario = Depends(administrador_actual),
 ):
     if usuario_id == administrador.id:
-        raise HTTPException(status_code=409, detail="No puedes desactivar tu propia cuenta")
+        raise HTTPException(status_code=409, detail="No puedes eliminar tu propia cuenta")
     usuario = db.get(Usuario, usuario_id)
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
     if usuario.rol == "administrador":
-        raise HTTPException(status_code=409, detail="Las cuentas administrador no se pueden eliminar")
-    usuario.activo = False
+        admin_restantes = db.query(Usuario).filter(
+            Usuario.rol == "administrador",
+            Usuario.id != usuario_id,
+        ).count()
+        if admin_restantes == 0:
+            raise HTTPException(
+                status_code=409,
+                detail="Debe quedar al menos un administrador activo en el sistema",
+            )
+
+    db.delete(usuario)
     db.commit()
-    registrar_auditoria("usuario.desactivar", administrador.id, usuario_id=usuario.id)
+    registrar_auditoria("usuario.eliminar", administrador.id, usuario_objetivo_id=usuario_id)
