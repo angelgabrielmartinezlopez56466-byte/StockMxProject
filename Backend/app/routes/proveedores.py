@@ -6,6 +6,7 @@ from app.auth.security import administrador_actual, usuario_actual
 from app.audit import registrar_auditoria
 from app.database import get_db
 from app.models.proveedor import Proveedor
+from app.models.usuario import Usuario
 from app.schemas.proveedores import (
     ProveedorActualizar,
     ProveedorCrear,
@@ -61,3 +62,18 @@ def actualizar_proveedor(
     db.refresh(proveedor)
     registrar_auditoria("proveedor.actualizar", administrador.id, proveedor_id=proveedor.id)
     return proveedor
+
+
+@router.delete("/{proveedor_id}", status_code=status.HTTP_204_NO_CONTENT)
+def eliminar_proveedor(
+    proveedor_id: int,
+    db: Session = Depends(get_db),
+    administrador: Usuario = Depends(administrador_actual),
+):
+    proveedor = db.get(Proveedor, proveedor_id)
+    if not proveedor:
+        raise HTTPException(status_code=404, detail="Proveedor no encontrado")
+
+    db.delete(proveedor)
+    db.commit()
+    registrar_auditoria("proveedor.eliminar", administrador.id, proveedor_id=proveedor_id)
